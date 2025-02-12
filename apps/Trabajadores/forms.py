@@ -1,9 +1,11 @@
 from django import forms
-from apps.Trabajadores.models import Procesador,Referencia, Windows,TipoDeDisco,MarcaDelEquipo,Procesador,Ram,ReferenciasDeLicencias,UltimosDigitosDeLicencia,LicenciadosDeOffice,MantenimientoDeEquipo,Office
+from apps.Trabajadores.models import Persona
 from django.contrib.auth.forms import UserCreationForm
 from .models import Persona
 from django.contrib.auth.forms import AuthenticationForm
-      
+from .models import VersionWindows, VersionOffice, Disco, Procesador, Estado
+from .models import Registros, VersionWindows, VersionOffice, Disco, Procesador, Estado
+
 #FORMS DE REGISTRO
 
 
@@ -14,9 +16,7 @@ class PersonaLoginForm(AuthenticationForm):
 
 
 
-from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from .models import Persona
+
 
 class PersonaForm(UserCreationForm):
     class Meta:
@@ -59,96 +59,68 @@ class LoginForm(forms.Form):
         return password1
 
 
-    
-class Form_referencia(forms.ModelForm):
-    
+class RegistroForm(forms.ModelForm):
     class Meta:
-        model = Referencia
-        fields = [
-            'referencia'
-        ]
-        
-class Form_office(forms.ModelForm):
-    
-    class Meta:
-        model = Office
-        fields = [
-            'office'
-        ]
-    
-class Form_windows(forms.ModelForm):
-    
-    class Meta:
-        model = Windows
-        fields = [
-            'windows'
-        ]
-    
-class Form_tipodedisco(forms.ModelForm):
-    
-    class Meta:
-        model = TipoDeDisco
-        fields = [
-            'tipodedisco'
-        ]
-        
-        
-class Form_marcadelequipo(forms.ModelForm):
-    
-    class Meta:
-        model = MarcaDelEquipo
-        fields = [
-            'marcadelequipo'
-        ]
-    
+        model = Registros
+        fields = '__all__'  # Incluir todos los campos
 
-class Form_procesador(forms.ModelForm):
-    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+        # Validaciones personalizadas
+        self.fields['ultimos_digitos_licencia'].widget.attrs.update({'maxlength': '3'})
+
+        # Reemplazar select vacíos por opciones disponibles
+        self.fields['version_de_windows'].queryset = VersionWindows.objects.all()
+        self.fields['version_de_office'].queryset = VersionOffice.objects.all()
+        self.fields['disco'].queryset = Disco.objects.all()
+        self.fields['procesador'].queryset = Procesador.objects.all()
+        self.fields['estado'].queryset = Estado.objects.all()
+
+
+
+
+#FORMS
+
+
+class VersionWindowsForm(forms.ModelForm):
+    class Meta:
+        model = VersionWindows
+        fields = ["nombre"]
+        widgets = {
+            "nombre": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nombre de la versión de Windows"}),
+        }
+
+class VersionOfficeForm(forms.ModelForm):
+    class Meta:
+        model = VersionOffice
+        fields = ["nombre"]
+        widgets = {
+            "nombre": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nombre de la versión de Office"}),
+        }
+
+class DiscoForm(forms.ModelForm):
+    class Meta:
+        model = Disco
+        fields = ["tipo"]
+        widgets = {
+            "tipo": forms.TextInput(attrs={"class": "form-control", "placeholder": "Tipo de disco"}),
+        }
+
+class ProcesadorForm(forms.ModelForm):
     class Meta:
         model = Procesador
-        fields = [
-            'procesador'
-        ]
-    
-class Form_ram(forms.ModelForm):
-    
+        fields = ["nombre"]
+        widgets = {
+            "nombre": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nombre del procesador"}),
+        }
+
+class EstadoForm(forms.ModelForm):
     class Meta:
-        model = Ram
-        fields = [
-            'ram'
-        ]
-    
-     
-class Form_referenciasdelicencias(forms.ModelForm):
-    
-    class Meta:
-        model = ReferenciasDeLicencias
-        fields = [
-            'referenciasdelicencias'
-        ]
-    
-    
-class Form_ultimosdigitosdelicencia(forms.ModelForm):
-    
-    class Meta:
-        model = UltimosDigitosDeLicencia
-        fields = [
-            'ultimosdigitosdelicencia'
-        ]
-        
-class Form_licenciadosdeoffice(forms.ModelForm):
-    
-    class Meta:
-        model = LicenciadosDeOffice
-        fields = [
-            'licenciadosdeoffice'
-        ]
-        
-class Form_mantenimientodeequipo(forms.ModelForm):
-    
-    class Meta:
-        model = MantenimientoDeEquipo
-        fields = [
-            'mantenimientodeequipo'
-        ]
-        
+        model = Estado
+        fields = ["estado"]
+        widgets = {
+            "estado": forms.TextInput(attrs={"class": "form-control", "placeholder": "Estado del equipo"}),
+        }

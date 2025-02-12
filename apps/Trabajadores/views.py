@@ -1,23 +1,21 @@
 from django.shortcuts import render
-from apps.Trabajadores.models import Referencia,Windows,Office,TipoDeDisco,MarcaDelEquipo,Procesador,Ram,ReferenciasDeLicencias,UltimosDigitosDeLicencia,LicenciadosDeOffice,MantenimientoDeEquipo
-from apps.Trabajadores.forms import Form_referencia,Form_windows,Form_office,Form_tipodedisco,Form_marcadelequipo,Form_procesador,Form_ram,Form_referenciasdelicencias,Form_ultimosdigitosdelicencia,Form_licenciadosdeoffice,Form_mantenimientodeequipo,PersonaForm
-from django.urls import reverse_lazy
-from django.views.generic import TemplateView, CreateView, UpdateView,DeleteView
+from apps.Trabajadores.models import Persona
 from django.contrib.auth import logout
 from django.shortcuts import render, redirect
-from apps.Trabajadores.forms import  LoginForm
 from django.contrib.auth import authenticate, login
-from django.contrib import messages
-from apps.Trabajadores.decorators import permission_required
-from django.contrib.auth.models import Permission
-from django.utils import timezone
-from django.contrib.contenttypes.models import ContentType
-from django.http import JsonResponse
-from django.shortcuts import render, redirect
-from django.contrib.auth import login
 from .forms import PersonaForm
 from .forms import PersonaLoginForm
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from .models import Registros
+from .forms import RegistroForm
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from .models import VersionWindows, VersionOffice, Disco, Procesador, Estado
+from .forms import VersionWindowsForm, VersionOfficeForm, DiscoForm, ProcesadorForm, EstadoForm
 
+from django.views.generic import ListView, CreateView, UpdateView,DeleteView
+from django.urls import reverse_lazy
 def Home(request):
     
     return render(request, 'home.html')
@@ -33,10 +31,10 @@ def login_view(request):
             user = authenticate(request, username=documento, password=password)
             if user is not None:
                 login(request, user)
-                return redirect("home")  # Redirige a la página principal después de iniciar sesión
+                return redirect("trabajadores:lista_registros")  # Redirige a la página principal después de iniciar sesión
     else:
         form = PersonaLoginForm()
-    return render(request, "login.html", {"form": form})
+    return render(request, "inicio_sesion.html", {"form": form})
 
 #REGISTRO DE PERSONA
 
@@ -54,341 +52,193 @@ def registro(request):
 
 
 
-
-
 def Cierre_sesion(request):
     logout(request)
-    return redirect('personas:inicio_sesion')
-
-#CRUD MODALIDAD
+    return redirect('trabajadores:inicio_sesion')
 
 
 
-    
-    
-    #referencias
-    
-def Referencia_index(request):
-    view_referencia = Referencia.objects.all()
-    form_referencia = Form_referencia
-    
-    context = {
-        'view_referencia': view_referencia,
-        'form_referencia': form_referencia,
-    }
-    
-    return render(request, 'referencia.html', context)
 
-class Referencia_create(CreateView):
-    model = Referencia
-    form_class = Form_referencia
-    template_name = 'referencia.html'
-    success_url = reverse_lazy('trabajadores:referencia_index')
+def lista_registros(request):
+    registros = Registros.objects.all()
+    form = RegistroForm()
+    return render(request, 'lista.html', {'registros': registros, 'form': form})
 
-class Referencia_delete(DeleteView):
-    model = Referencia
-    success_url = reverse_lazy('trabajadores:referencia_index')
+def guardar_registro(request):
+    if request.method == 'POST':
+        form = RegistroForm(request.POST)
+        if form.is_valid():
+            registro = form.save()
+            return JsonResponse({'success': True, 'nombre': registro.nombre_apellidos})
+    return JsonResponse({'success': False, 'errors': form.errors})
 
-class Referencia_edit(UpdateView):
-    model = Referencia
-    form_class = Form_referencia
-    fields = ['referencia']
-    success_url = reverse_lazy('trabajadores:referencia_index')
+def editar_registro(request, pk):
+    registro = get_object_or_404(Registros, pk=pk)
+    if request.method == 'POST':
+        form = RegistroForm(request.POST, instance=registro)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'errors': form.errors})
+    return JsonResponse({'success': False})
 
-
-#windows
+def eliminar_registro(request, pk):
+    registro = get_object_or_404(Registros, pk=pk)
+    if request.method == 'POST':
+        registro.delete()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})
 
 
-def Windows_index(request):
-    view_windows = Windows.objects.all()
-    form_windows = Form_windows
-    
-    context = {
-        'view_windows': view_windows,
-        'form_windows': form_windows,
-    }
-    
-    return render(request, 'windows.html', context)
 
-class Windows_create(CreateView):
-    model = Windows
-    form_class = Form_windows
-    template_name = 'windows.html'
-    success_url = reverse_lazy('trabajadores:windows_index')
-
-class Windows_delete(DeleteView):
-    model = Windows
-    success_url = reverse_lazy('trabajadores:windows_index')
-
-class Windows_edit(UpdateView):
-    model = Windows
-    form_class = Form_windows
-    fields = ['windows']
-    success_url = reverse_lazy('trabajadores:windows_index')
+#CRUDS
 
 
-#office
 
-def Office_index(request):
-    view_office = Office.objects.all()
-    form_office = Form_office
+# ================= CRUD para Disco =================
+
+
+def DiscoListView(request):
+    view_discos = Disco.objects.all()
+    form_disco =    DiscoForm
     
     context = {
-        'view_office': view_office,
-        'form_office': form_office,
+         'view_discos':view_discos,
+         'form_disco':form_disco,
     }
     
-    return render(request, 'office.html', context)
+    return render(request, 'disco_list.html',context)
+class DiscoCreateView(CreateView):
+    model =  Disco
+    form_class = DiscoForm
+    template_name = 'disco_index.html'
+    success_url = reverse_lazy('trabajadores:disco_list')
 
-class Office_create(CreateView):
-    model = Office
-    form_class = Form_office
-    template_name = 'office.html'
-    success_url = reverse_lazy('trabajadores:office_index')
+class DiscoDeleteView(DeleteView):
+    model = Disco
+    success_url = reverse_lazy('trabajadores:disco_list')
 
-class Office_delete(DeleteView):
-    model = Office
-    success_url = reverse_lazy('trabajadores:office_index')
+class DiscoUpdateView(UpdateView):
+    model = Disco
+    from_class = DiscoForm
+    fields = ['tipo']
+    success_url = reverse_lazy('trabajadores:disco_list')
+    
+# ================= CRUD para VersionWindows =================
 
-class Office_edit(UpdateView):
-    model = Office
-    form_class = Form_office
-    fields = ['office']
-    success_url = reverse_lazy('trabajadores:office_index')
-
-
-#tipodedisco
-
-def TipoDeDisco_index(request):
-    view_tipodedisco = TipoDeDisco.objects.all()
-    form_tipodedisco = Form_tipodedisco
+def VersionWindowsListView(request):
+    view_versions = VersionWindows.objects.all()
+    form_version = VersionWindowsForm
     
     context = {
-        'view_tipodedisco': view_tipodedisco,
-        'form_tipodedisco': form_tipodedisco,
+         'view_versions': view_versions,
+         'form_version': form_version,
     }
     
-    return render(request, 'tipodedisco.html', context)
+    return render(request, 'versionwindows_list.html', context)
 
-class TipoDeDisco_create(CreateView):
-    model = TipoDeDisco
-    form_class = Form_tipodedisco
-    template_name = 'tipodedisco.html'
-    success_url = reverse_lazy('trabajadores:tipodedisco_index')
+class VersionWindowsCreateView(CreateView):
+    model = VersionWindows
+    from_class = VersionWindowsForm
+    template_name = 'versionwindows_index.html'
+    success_url = reverse_lazy('trabajadores:versionwindows_list')
 
-class TipoDeDisco_delete(DeleteView):
-    model = TipoDeDisco
-    success_url = reverse_lazy('trabajadores:tipodedisco_index')
+class VersionWindowsDeleteView(DeleteView):
+    model = VersionWindows
+    success_url = reverse_lazy('trabajadores:versionwindows_list')
 
-class TipoDeDisco_edit(UpdateView):
-    model = TipoDeDisco
-    form_class = Form_tipodedisco
-    fields = ['tipodedisco']
-    success_url = reverse_lazy('trabajadores:tipodedisco_index')
+class VersionWindowsUpdateView(UpdateView):
+    model = VersionWindows
+    from_class = VersionWindowsForm  
+    fields = ['nombre']
+    success_url = reverse_lazy('trabajadores:versionwindows_list')
 
 
+# ================= CRUD para Version Office =================
 
-#marca del equipo
-
-def MarcaDelEquipo_index(request):
-    view_marcadelequipo = MarcaDelEquipo.objects.all()
-    form_marcadelequipo = Form_marcadelequipo
+def VersionOfficeListView(request):
+    view_versions = VersionOffice.objects.all()
+    form_version = VersionOfficeForm
     
     context = {
-        'view_marcadelequipo': view_marcadelequipo,
-        'form_marcadelequipo': form_marcadelequipo,
+         'view_versions': view_versions,
+         'form_version': form_version,
     }
     
-    return render(request, 'marcadelequipo.html', context)
+    return render(request, 'versionoffice_list.html', context)
 
-class MarcaDelEquipo_create(CreateView):
-    model = MarcaDelEquipo
-    form_class = Form_marcadelequipo
-    template_name = 'marcadelequipo.html'
-    success_url = reverse_lazy('trabajadores:marcadelequipo_index')
+class VersionOfficeCreateView(CreateView):
+    model = VersionOffice
+    form_class = VersionOfficeForm
+    template_name = 'versionoffice_list.html'
+    success_url = reverse_lazy('trabajadores:version_office_list')
 
-class MarcaDelEquipo_delete(DeleteView):
-    model = MarcaDelEquipo
-    success_url = reverse_lazy('trabajadores:marcadelequipo_index')
+class VersionOfficeDeleteView(DeleteView):
+    model = VersionOffice
+    success_url = reverse_lazy('trabajadores:version_office_list')
 
-class MarcaDelEquipo_edit(UpdateView):
-    model = MarcaDelEquipo
-    form_class = Form_marcadelequipo
-    fields = ['marcadelequipo']
-    success_url = reverse_lazy('trabajadores:marcadelequipo_index')
+class VersionOfficeUpdateView(UpdateView):
+    model = VersionOffice
+    from_class = VersionOfficeForm  
+    fields = ['nombre']
+    success_url = reverse_lazy('trabajadores:version_office_list')
 
 
-#procesador
+# ================= CRUD para Procesador =================
 
-def Procesador_index(request):
-    view_procesador = Procesador.objects.all()
-    form_procesador = Form_procesador
+def ProcesadorListView(request):
+    view_versions = Procesador.objects.all()
+    form_version = ProcesadorForm
     
     context = {
-        'view_procesador': view_procesador,
-        'form_procesador': form_procesador,
+         'view_versions': view_versions,
+         'form_version': form_version,
     }
     
-    return render(request, 'procesador.html', context)
+    return render(request, 'procesador_list.html', context)
 
-class Procesador_create(CreateView):
+class ProcesadorCreateView(CreateView):
     model = Procesador
-    form_class = Form_procesador
-    template_name = 'procesador.html'
-    success_url = reverse_lazy('trabajadores:procesador_index')
+    form_class = ProcesadorForm
+    template_name = 'procesador_list.html'
+    success_url = reverse_lazy('trabajadores:procesador_list')
 
-class Procesador_delete(DeleteView):
+class ProcesadorDeleteView(DeleteView):
     model = Procesador
-    success_url = reverse_lazy('trabajadores:procesador_index')
+    success_url = reverse_lazy('trabajadores:procesador_list')
 
-class Procesador_edit(UpdateView):
+class ProcesadorUpdateView(UpdateView):
     model = Procesador
-    form_class = Form_procesador
-    fields = ['procesador']
-    success_url = reverse_lazy('trabajadores:procesador_index')
+    from_class = ProcesadorForm  
+    fields = ['nombre']
+    success_url = reverse_lazy('trabajadores:procesador_list')
 
 
-#ram
+# ================= CRUD para Estado =================
 
-def Ram_index(request):
-    view_ram = Ram.objects.all()
-    form_ram = Form_ram
+def EstadoListView(request):
+    view_estados = Estado.objects.all()
+    form_estado = EstadoForm
     
     context = {
-        'view_ram': view_ram,
-        'form_ram': form_ram,
+         'view_estados': view_estados,
+         'form_estado': form_estado,
     }
     
-    return render(request, 'ram.html', context)
+    return render(request, 'estado_list.html', context)
 
-class Ram_create(CreateView):
-    model = Ram
-    form_class = Form_ram
-    template_name = 'ram.html'
-    success_url = reverse_lazy('trabajadores:ram_index')
+class EstadoCreateView(CreateView):
+    model = Estado
+    form_class = EstadoForm
+    template_name = 'estado_index.html'
+    success_url = reverse_lazy('trabajadores:estado_list')
 
-class Ram_delete(DeleteView):
-    model = Ram
-    success_url = reverse_lazy('trabajadores:ram_index')
+class EstadoDeleteView(DeleteView):
+    model = Estado
+    success_url = reverse_lazy('trabajadores:estado_list')
 
-class Ram_edit(UpdateView):
-    model = Ram
-    form_class = Form_ram
-    fields = ['ram']
-    success_url = reverse_lazy('trabajadores:ram_index')
-
-
-#referencias de licencias 
-def ReferenciasDeLicencias_index(request):
-    view_referenciasdelicencias = ReferenciasDeLicencias.objects.all()
-    form_referenciasdelicencias = Form_referenciasdelicencias
-    
-    context = {
-        'view_referenciasdelicencias': view_referenciasdelicencias,
-        'form_referenciasdelicencias': form_referenciasdelicencias,
-    }
-    
-    return render(request, 'referenciadelicencias.html', context)
-
-class ReferenciasDeLicencias_create(CreateView):
-    model = ReferenciasDeLicencias
-    form_class = Form_referenciasdelicencias
-    template_name = 'referenciadelicencias.html'
-    success_url = reverse_lazy('trabajadores:referenciasdelicencias_index')
-
-class ReferenciasDeLicencias_delete(DeleteView):
-    model = ReferenciasDeLicencias
-    success_url = reverse_lazy('trabajadores:referenciasdelicencias_index')
-
-class ReferenciasDeLicencias_edit(UpdateView):
-    model = ReferenciasDeLicencias
-    form_class = Form_referenciasdelicencias
-    fields = ['referenciasdelicencias']
-    success_url = reverse_lazy('trabajadores:referenciasdelicencias_index')
-
-
-#UltimosDigitosDeLicencias
-def UltimosDigitosDeLicencia_index(request):
-    view_ultimosdigitosdelicencia = UltimosDigitosDeLicencia.objects.all()
-    form_ultimosdigitosdelicencia = Form_ultimosdigitosdelicencia
-    
-    context = {
-        'view_ultimosdigitosdelicencia': view_ultimosdigitosdelicencia,
-        'form_ultimosdigitosdelicencia': form_ultimosdigitosdelicencia,
-    }
-    
-    return render(request, 'ultimosdigitosdelicencia.html', context)
-
-class UltimosDigitosDeLicencia_create(CreateView):
-    model = UltimosDigitosDeLicencia
-    form_class = Form_ultimosdigitosdelicencia
-    template_name = 'ultimosdigitosdelicencia.html'
-    success_url = reverse_lazy('trabajadores:ultimosdigitosdelicencia_index')
-
-class UltimosDigitosDeLicencia_delete(DeleteView):
-    model = UltimosDigitosDeLicencia
-    success_url = reverse_lazy('trabajadores:ultimosdigitosdelicencia_index')
-
-class UltimosDigitosDeLicencia_edit(UpdateView):
-    model = UltimosDigitosDeLicencia
-    form_class = Form_ultimosdigitosdelicencia
-    fields = ['ultimosdigitosdelicencia']
-    success_url = reverse_lazy('trabajadores:ultimosdigitosdelicencia_index')
-
-
-#licenciadosdeoffice
-def LicenciadosDeOffice_index(request):
-    view_licenciadosdeoffice = LicenciadosDeOffice.objects.all()
-    form_licenciadosdeoffice = Form_licenciadosdeoffice
-    
-    context = {
-        'view_licenciadosdeoffice': view_licenciadosdeoffice,
-        'form_licenciadosdeoffice': form_licenciadosdeoffice,
-    }
-    
-    return render(request, 'licenciadosdeoffice.html', context)
-
-class LicenciadosDeOffice_create(CreateView):
-    model = LicenciadosDeOffice
-    form_class = Form_licenciadosdeoffice
-    template_name = 'licenciadosdeoffice.html'
-    success_url = reverse_lazy('trabajadores:licenciadosdeoffice_index')
-
-class LicenciadosDeOffice_delete(DeleteView):
-    model = LicenciadosDeOffice
-    success_url = reverse_lazy('trabajadores:licenciadosdeoffice_index')
-
-class LicenciadosDeOffice_edit(UpdateView):
-    model = LicenciadosDeOffice
-    form_class = Form_licenciadosdeoffice
-    fields = ['licenciadosdeoffice']
-    success_url = reverse_lazy('trabajadores:licenciadosdeoffice_index')
-
-#mantenimientodeequipo
-
-def MantenimientoDeEquipo_index(request):
-    view_mantenimientodeequipo = MantenimientoDeEquipo.objects.all()
-    form_mantenimientodeequipo = Form_mantenimientodeequipo
-    
-    context = {
-        'view_mantenimientodeequipo': view_mantenimientodeequipo,
-        'form_mantenimientodeequipo': form_mantenimientodeequipo,
-    }
-    
-    return render(request, 'mantenimientodeequipo.html', context)
-
-class MantenimientoDeEquipo_create(CreateView):
-    model = MantenimientoDeEquipo
-    form_class = Form_mantenimientodeequipo
-    template_name = 'mantenimientodeequipo.html'
-    success_url = reverse_lazy('trabajadores:mantenimientodeequipo_index')
-
-class MantenimientoDeEquipo_delete(DeleteView):
-    model = MantenimientoDeEquipo
-    success_url = reverse_lazy('trabajadores:mantenimientodeequipo_index')
-
-class MantenimientoDeEquipo_edit(UpdateView):
-    model = MantenimientoDeEquipo
-    form_class = Form_mantenimientodeequipo
-    fields = ['mantenimientodeequipo']
-    success_url = reverse_lazy('trabajadores:mantenimientodeequipo_index')
+class EstadoUpdateView(UpdateView):
+    model = Estado
+    from_class = EstadoForm  
+    fields = ['estado']
+    success_url = reverse_lazy('trabajadores:estado_list')

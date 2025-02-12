@@ -23,6 +23,61 @@ class Persona(AbstractBaseUser):
     def is_staff(self):
         return self.is_admin
 
+
+
+
+class VersionWindows(models.Model):
+    nombre = models.CharField(max_length=150, unique=True)
+
+    def __str__(self):
+        return self.nombre
+
+class VersionOffice(models.Model):
+    nombre = models.CharField(max_length=150, unique=True)
+
+    def __str__(self):
+        return self.nombre
+
+class Disco(models.Model):
+    tipo = models.CharField(max_length=150, unique=True)  # Ejemplo: SSD, HDD
+
+    def __str__(self):
+        return self.tipo
+
+class Procesador(models.Model):
+    nombre = models.CharField(max_length=150, unique=True)
+
+    def __str__(self):
+        return self.nombre
+
+class Estado(models.Model):
+    estado = models.CharField(max_length=150, unique=True)  # Ejemplo: Activo, En reparación, Dañado
+
+    def __str__(self):
+        return self.estado
+
+class Registros(models.Model):
+    nombre_apellidos = models.CharField(max_length=150)
+    referencia_equipo = models.CharField(max_length=150)
+    version_de_windows = models.ForeignKey(VersionWindows, on_delete=models.CASCADE)
+    version_de_office = models.ForeignKey(VersionOffice, on_delete=models.CASCADE)
+    disco = models.ForeignKey(Disco, on_delete=models.CASCADE)
+    procesador = models.ForeignKey(Procesador, on_delete=models.CASCADE)
+    tipo_De_torre = models.CharField(max_length=150)
+    ram = models.PositiveIntegerField()
+    referencia_licencia = models.CharField(max_length=150)
+    ultimos_digitos_licencia = models.CharField(max_length=3)
+    se_le_instalo_licencia = models.CharField(max_length=150)
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.nombre_apellidos} - {self.referencia_equipo}"
+
+
+
+
+    
+    
     
 class Referencia(models.Model):
     referencia = models.CharField(max_length=150)
@@ -61,11 +116,6 @@ class MarcaDelEquipo(models.Model):
     
     
     
-class Procesador(models.Model):
-    procesador = models.CharField(max_length=150)
-    
-    def __str__(self):
-        return self.procesador
 
 
 class Ram(models.Model):
