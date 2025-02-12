@@ -1,0 +1,148 @@
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+{% load static %}
+<link rel="stylesheet" href="{% static 'bootstrap/css/modalidad.css' %}">
+<div class="main p-3">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="text-center mb-4">
+                    <h1 class="h1 display-4 text-primary">Listado de Referencias</h1>
+                </div>
+                <button type="button" class="btn btn-success btn-sm mb-3" data-toggle="modal" data-target="#crearModal">
+                    <i class="fas fa-plus-circle"></i> Agregar
+                </button>
+                <div class="table-responsive shadow-sm rounded">
+                    <table class="table table-striped table-hover text-center align-middle">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Usuario</th>
+                                <th scope="col">Referencia</th>
+                                <th scope="col">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for referencia in view_referencias %}
+                            <tr>
+                                <th scope="row">{{ referencia.id }}</th>
+                                <td>{{ referencia.usuario }}</td>
+                                <td>{{ referencia.referencia }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#editarModal" data-id="{{ referencia.id }}" data-usuario="{{ referencia.usuario }}" data-referencia="{{ referencia.referencia }}" onclick="Editar_referencia(this)">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#eliminarModal" data-id="{{ referencia.id }}" onclick="Eliminar_referencia(this)">
+                                        <i class="fas fa-trash-alt"></i> Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenedor para los modales -->
+<div class="modal-container">
+    <!-- Modal Crear -->
+    <div class="modal fade" id="crearModal" tabindex="-1" role="dialog" aria-labelledby="crearModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="crearModalLabel"><i class="fas fa-plus-circle"></i> Crear Referencia</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'trabajadores:referencia_create' %}" method="post">
+                        <div class="form-group">
+                            {% csrf_token %}
+                            {{ Form_referencia.as_p }}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar -->
+    <div class="modal fade" id="editarModal" tabindex="-1" role="dialog" aria-labelledby="editarModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-white">
+                    <h5 class="modal-title" id="editarModalLabel"><i class="fas fa-edit"></i> Editar Referencia</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editarForm" method="post">
+                        <div class="form-group">
+                            {% csrf_token %}
+                            <label for="usuario">Usuario:</label>
+                            <input type="text" id="usuario" name="usuario" class="form-control" placeholder="Nombre del usuario" />
+                            <label for="referencia">Referencia:</label>
+                            <input type="text" id="referencia" name="referencia" class="form-control" placeholder="Referencia" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-warning">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Eliminar -->
+    <div class="modal fade" id="eliminarModal" tabindex="-1" role="dialog" aria-labelledby="eliminarModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="eliminarModalLabel"><i class="fas fa-trash-alt"></i> Eliminar Referencia</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que quieres eliminar esta Referencia?</p>
+                </div>
+                <div class="modal-footer">
+                    <form id="deleteForm" method="post">
+                        {% csrf_token %}
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function Eliminar_referencia(button) {
+        const pk = button.getAttribute('data-id');
+        document.getElementById('deleteForm').action = `/referencias/delete/${pk}`;
+    }
+    function Editar_referencia(button){
+        const pk = button.getAttribute('data-id');
+        const usuario = button.getAttribute('data-usuario');
+        const referencia = button.getAttribute('data-referencia');
+
+        document.getElementById('editarForm').action = `/referencias/edit/${pk}`;
+        document.getElementById('usuario').value = usuario;
+        document.getElementById('referencia').value = referencia;
+    }
+</script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

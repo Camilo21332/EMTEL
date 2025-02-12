@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar With Bootstrap</title>
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
+
+    {%load static%}
+    <link rel="stylesheet" href="{% static 'bootstrap/css/home.css'%}">
+    <link rel="stylesheet" href="{% static 'bootstrap/css/navbar.css'%}">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+   
+</head>
+
+
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <a class="navbar-brand" href="{% url 'trabajadores:Home'%}">Analítica</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+             
+            </li>
+        </ul>
+        </ul>
+    </nav>
+    
+<section class="contenedor ">
+
+    <div class="wrapper">
+        <aside id="sidebar"  class="overflow-auto">
+            
+            <div class="d-flex">
+                <button class="toggle-btn" type="button">
+                    <img src="{% static 'bootstrap/img/menu.png' %}" alt="Protection Icon" style="width: 25px; height: 25px;">
+                </button>
+            </div>
+            <ul class="sidebar-nav">
+             
+
+             
+              
+            
+              
+                <li class="sidebar-item">
+                    <a href="{% url 'trabajadores:referencia_index'%}" class="sidebar-link">
+                        <img src="{% static 'bootstrap/img/usuario.png' %}" alt="Protection Icon" style="width: 20px; height: 20px;">
+                        <span>Referencias</span>
+                    </a>
+                </li>
+         
+                <li class="sidebar-item">
+                    <a href="{% url 'trabajadores:windows_index'%}" class="sidebar-link">
+                        <img src="{% static 'bootstrap/img/usuario.png' %}" alt="Protection Icon" style="width: 20px; height: 20px;">
+                        <span>Windows</span>
+                    </a>
+                </li>
+   
+                <li class="sidebar-item">
+                    <a href="{% url 'trabajadores:office_index'%}" class="sidebar-link">
+                        <img src="{% static 'bootstrap/img/usuario.png' %}" alt="Protection Icon" style="width: 20px; height: 20px;">
+                        <span>Gestionar Office</span>
+                    </a>
+                </li>
+     
+                <li class="sidebar-item">
+                    <a href="{% url 'trabajadores:tipo_de_disco_index'%}" class="sidebar-link">
+                        <img src="{% static 'bootstrap/img/usuario.png' %}" alt="Protection Icon" style="width: 20px; height: 20px;">
+                        <span>Gestionar tipo de index</span>
+                    </a>
+                </li>
+       
+                <li class="sidebar-item">
+                    <a href="{% url 'trabajadores:marca_del_equipo_index'%}" class="sidebar-link">
+                        <img src="{% static 'bootstrap/img/usuario.png' %}" alt="Protection Icon" style="width: 20px; height: 20px;">
+                        <span>Gestionar Marca del equipo</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{% url 'trabajadores:procesador_index'%}" class="sidebar-link">
+                        <img src="{% static 'bootstrap/img/usuario.png' %}" alt="Protection Icon" style="width: 20px; height: 20px;">
+                        <span>Gestionar Procesador</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{% url 'trabajadores:ram_index'%}" class="sidebar-link">
+                        <img src="{% static 'bootstrap/img/usuario.png' %}" alt="Protection Icon" style="width: 20px; height: 20px;">
+                        <span>Gestionar Ram</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{% url 'trabajadores:referencias_de_licencias_index'%}" class="sidebar-link">
+                        <img src="{% static 'bootstrap/img/usuario.png' %}" alt="Protection Icon" style="width: 20px; height: 20px;">
+                        <span>Gestionar Referencias de licencias</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{% url 'trabajadores:ultimos_digitos_de_licencia_index'%}" class="sidebar-link">
+                        <img src="{% static 'bootstrap/img/usuario.png' %}" alt="Protection Icon" style="width: 20px; height: 20px;">
+                        <span>Gestionar Ultimos dijitos</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{% url 'trabajadores:licenciados_de_office_index'%}" class="sidebar-link">
+                        <img src="{% static 'bootstrap/img/usuario.png' %}" alt="Protection Icon" style="width: 20px; height: 20px;">
+                        <span>Gestionar licenciados de office </span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{% url 'trabajadores:mantenimiento_de_equipo_index'%}" class="sidebar-link">
+                        <img src="{% static 'bootstrap/img/usuario.png' %}" alt="Protection Icon" style="width: 20px; height: 20px;">
+                        <span>Gestionar Mantenimiento de equipo </span>
+                    </a>
+                </li>
+       
+                
+
+                
+             
+    
+                
+   
+
+     
+               
+            
+         
+            </ul>
+            <div class="sidebar-footer">
+                <a href="{% url 'trabajadores:cierre_sesion'%}" class="sidebar-link">
+                    <i><img src="{% static 'bootstrap/img/cerrar-sesion-icon.png' %}" alt="Protection Icon" style="    margin-left: -5px; width: 20px; height: 20px;"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+        {% block contenido%}
+
+
+        
+    
+        {% endblock contenido%}
+    </div>
+        <script src="{% static 'bootstrap/js/home.js'%}"></script>
+        <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js'%}"></script>
+    </section>
+</body>
+
+</html>
